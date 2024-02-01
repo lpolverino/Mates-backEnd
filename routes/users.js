@@ -1,9 +1,45 @@
 var express = require('express');
 var router = express.Router();
+const passport = require("passport");
+require("dotenv").config()
+const jwt = require("jsonwebtoken");
+const authentications = require("../authenticate")
+
+const userControler = require("../controllers/userController")
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+
+router.get('/', authentications.verifyToken,
+  (req,res,next) => {
+    jwt.verify(req.token, process.env.SECRET_P, (err, authData) => {
+      if(err){
+        return res.status(403).json({message:`Validatio Fail`, error:err})
+      }else{
+       next() 
+      }
+    })
+  },
+ userControler.user_list);
+
+router.get('/:userId',)
+
+router.post('/log-in', function (req, res, next) {
+  
+  passport.authenticate('local', (err, user, info) => {
+    console.log(`if error ${err}`);
+    console.log(`user:${user}`);
+    if (err || !user) {
+        return res.status(400).json({
+            message: 'Something is not right',
+            error:err,
+        });
+    } 
+    const token = jwt.sign({user}, process.env.SECRET_P);
+    return res.json({token});
+   
+  })(req, res);
 });
+
+router.post('/sing-up', userControler.sing_up)
 
 module.exports = router;

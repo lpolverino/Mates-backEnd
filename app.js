@@ -3,23 +3,41 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-const apicache = require('apicache');
+const mongoose = require("mongoose");
+require("dotenv").config()
+const session = require("express-session");
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+const authenticate = require("./authenticate");
+const jwt = require("jsonwebtoken");
+var cors = require('cors')
+
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 var app = express();
 
-// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-let cache = apicache.middleware;
-app.use(cache('5 minutes'));
+mongoose.set("strictQuery", false);
 
+main().catch((err) => console.log(err));
+async function main() {
+  await mongoose.connect(process.env.MONGOURI);
+}
 
+passport.use(
+  authenticate.local_strategy
+);
+
+app.use(cors())
 app.use(logger('dev'));
 app.use(express.json());
+app.use(session({ secret: process.env.SECRET_P, resave: false, saveUninitialized: true }));
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
