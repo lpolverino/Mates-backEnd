@@ -5,10 +5,10 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
     username:{ type: String, required: true },
     password:{ type: String, required: true },
-    email:{ type: String },
-    description :{ type: String },
-    date_of_birth:{type: Date},
-    date_account_creation:{type: Date},
+    email:{ type: String, default:''},
+    description :{ type: String, default:'' },
+    date_of_birth:{type: Date, default: new Date()},
+    date_account_creation:{type: Date, default: new Date()},
     friends:[],
     groups:[],
 })
