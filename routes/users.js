@@ -44,4 +44,6 @@ router.post('/log-in', function (req, res, next) {
 
 router.post('/sing-up', userControler.sing_up)
 
+router.post('/:userId/friends', authentications.verifyToken, userControler.add_friend)
+
 module.exports = router;

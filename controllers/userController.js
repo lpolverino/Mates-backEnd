@@ -119,3 +119,43 @@ asyncHandler(async (req, res, next) => {
     }
 })
 ]
+
+exports.add_friend = [
+    body("username")
+    .trim()
+    .isLength({min:1})
+    .withMessage("The name is empty"),
+    asyncHandler(async (req,res,next) => {
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+        return res.status(400).json({message:"Invalid data provided", error:errors.array()})
+        } else {
+          const userId = req.params.userId
+          const user = await User.findById(userId).select("-password").exec()
+          const friend = await User.find({username:req.body.username}).select("username").exec()
+
+          if( !user === null) {
+            return res.status(400).json({message:"user not exists", error:errors.array()})
+          }
+
+          if(friend.length === 0){
+            return res.status(400).json({message:"The person you tried to add dosen't exists", error:errors.array()})
+          }
+
+          const friendEntry = {username:friend[0].username, _id:friend[0]._id}
+
+          console.log(user.friends);
+          const newUser  = {
+            ...user,
+            _id: userId,
+            friends: user.friends.push(friendEntry)
+          }
+
+          const updatedUser = await User.findByIdAndUpdate(req.params.userId, newUser, {});
+    
+          return res.status(200).json({message:"updated correctly", friend:friendEntry})
+        }
+      }
+    )
+]
